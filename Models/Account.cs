@@ -35,7 +35,7 @@ namespace Bank.Models
         
         public void ValidateCreditUsageBiggerThenBalance()
         {
-            if( CreditUsage > Balance)
+            if(CreditUsage > Balance)
                 throw new CreditException("Your credit usage is bigger than your balance.");
         }
     }

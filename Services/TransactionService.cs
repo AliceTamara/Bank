@@ -1,4 +1,5 @@
 ﻿using Bank.Extensions;
+using Bank.Models;
 using Bank.Repositories.Interfaces;
 using Bank.Services.Interafaces;
 
@@ -15,11 +16,10 @@ public class TransactionService : ITransactionService
 
     public double Withdraw(int number, double amount)
     {
-        var account = _accountRepository.GetByNumber(number);
+        var account = GetValidAccount(number);
 
-        account.ValidateWhenNull();
         account.ValidateAmountBiggerThanBalance(amount);
-
+        
         account.Balance -= amount;
 
         return amount;
@@ -27,17 +27,14 @@ public class TransactionService : ITransactionService
 
     public void Deposit(int number, double amount)
     {
-        var account = _accountRepository.GetByNumber(number);
-        account.ValidateWhenNull();
+        var account = GetValidAccount(number);
 
         account.Balance += amount;
     }
 
     public double UseCredit(int number, double amount)
     {
-        var account = _accountRepository.GetByNumber(number);
-
-        account.ValidateWhenNull();
+        var account = GetValidAccount(number);
         account.ValidateAmountBiggerThanAvailableCredit(amount);
         
         account.CreditUsage += amount;
@@ -47,9 +44,7 @@ public class TransactionService : ITransactionService
 
     public void PayCredit(int number, double amount)
     {
-        var account = _accountRepository.GetByNumber(number);
-
-        account.ValidateWhenNull();
+        var account = GetValidAccount(number);
         account.ValidateAmountBiggerThenUsedCredit(amount);
 
         account.CreditUsage -= amount;
@@ -57,8 +52,7 @@ public class TransactionService : ITransactionService
 
     public void PayCreditWithBalance(int number, double amount)
     {
-        var account = _accountRepository.GetByNumber(number);
-        account.ValidateWhenNull();
+        var account = GetValidAccount(number);
 
         account.ValidateAmountBiggerThanBalance(amount);
         account.ValidateAmountBiggerThenUsedCredit(amount);
@@ -69,12 +63,19 @@ public class TransactionService : ITransactionService
 
     public void PayAllCreditWithBalance(int number)
     {
-        var account = _accountRepository.GetByNumber(number);
-        
-        account.ValidateWhenNull();
+        var account = GetValidAccount(number);
         account.ValidateCreditUsageBiggerThenBalance();
 
         account.Balance -= account.CreditUsage;
         account.CreditUsage = 0;
+    }
+
+    private Account GetValidAccount(int number)
+    {
+        var account = _accountRepository.GetByNumber(number);
+
+        account.ValidateWhenNull();
+
+        return account;
     }
 }
